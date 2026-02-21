@@ -3,11 +3,7 @@
     "rewrites": [
         {
             "source": "/weather",
-            "destination": "/weather.js"
-        },
-        {
-            "source": "/(.*)",
-            "destination": "/index.html"
+            "destination": "/api/weather"
         }
     ]
 }

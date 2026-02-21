@@ -42,7 +42,7 @@ const server = http.createServer(async (req, res) => {
 
     // Serve index.html
     if (pathname === '/' || pathname === '/index.html') {
-        fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
+        fs.readFile(path.join(__dirname, '..', 'index.html'), (err, data) => {
             if (err) {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 res.end('Internal Server Error');
@@ -91,19 +91,24 @@ const server = http.createServer(async (req, res) => {
     res.end('Not Found');
 });
 
-// Start Server
-server.on('error', (e) => {
-    if (e.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use.`);
-        console.log('Please stop any other running instances of the app or wait a few seconds and try again.');
-        process.exit(1);
-    }
-});
+// Export for Vercel
+module.exports = server;
 
-server.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
-    console.log('Press Ctrl+C to stop the server.');
-});
+// Only start server if run directly (local)
+if (require.main === module) {
+    server.on('error', (e) => {
+        if (e.code === 'EADDRINUSE') {
+            console.error(`Port ${PORT} is already in use.`);
+            console.log('Please stop any other running instances of the app or wait a few seconds and try again.');
+            process.exit(1);
+        }
+    });
+
+    server.listen(PORT, () => {
+        console.log(`Server is running at http://localhost:${PORT}`);
+        console.log('Press Ctrl+C to stop the server.');
+    });
+}
 
 // CLI Version (Bonus)
 if (process.argv.includes('--cli')) {
