@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyCast - Smart Weather app</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #4f46e5;
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --text: #1e293b;
+            --text-light: #64748b;
+            --glass: rgba(255, 255, 255, 0.6);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.5s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            padding: 2rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        p.subtitle {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        input {
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        button {
+            padding: 1rem;
+            border-radius: 1rem;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+        }
+
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+        }
+
+        #weather-info {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .weather-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .temp-main {
+            font-size: 4rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+
+        .desc {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            text-transform: capitalize;
+            margin-bottom: 1.5rem;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            text-align: left;
+        }
+
+        .detail-item {
+            background: #f1f5f9;
+            padding: 0.8rem;
+            border-radius: 1rem;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            display: block;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        #error-msg {
+            color: #ef4444;
+            margin-top: 1rem;
+            display: none;
+            font-weight: 500;
+        }
+
+        .loader {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e2e8f0;
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            margin: 1rem auto;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .icon-img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .current-time {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SkyCast</h1>
+        <p class="subtitle">Real-time weather data</p>
+
+        <form id="weather-form" class="search-box">
+            <input type="text" id="city" placeholder="Enter city (e.g. London)" required>
+            <input type="text" id="country" placeholder="Country code (optional, e.g. uk)">
+            <button type="submit">Check Weather</button>
+        </form>
+
+        <div class="loader" id="loader"></div>
+        <div id="error-msg"></div>
+
+        <div id="weather-info">
+            <div class="weather-card">
+                <img id="w-icon" class="icon-img" src="" alt="Weather Icon">
+                <h2 id="w-city">City, Country</h2>
+                <div class="temp-main"><span id="w-temp">--</span>°C</div>
+                <div class="desc" id="w-desc">Cloudy</div>
+                
+                <div class="details">
+                    <div class="detail-item">
+                        <span class="detail-label">Humidity</span>
+                        <span class="detail-value" id="w-humidity">--%</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Wind Speed</span>
+                        <span class="detail-value" id="w-wind">-- m/s</span>
+                    </div>
+                </div>
+            </div>
+            <div class="current-time" id="current-time"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('weather-form');
+        const weatherInfo = document.getElementById('weather-info');
+        const errorMsg = document.getElementById('error-msg');
+        const loader = document.getElementById('loader');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const city = document.getElementById('city').value;
+            const country = document.getElementById('country').value;
+
+            // Reset UI
+            errorMsg.style.display = 'none';
+            weatherInfo.style.display = 'none';
+            loader.style.display = 'block';
+
+            try {
+                const query = country ? `city=${city}&country=${country}` : `city=${city}`;
+                const response = await fetch(`/weather?${query}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayWeather(data);
+                } else {
+                    throw new Error(data.error || 'Failed to fetch weather data');
+                }
+            } catch (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+            } finally {
+                loader.style.display = 'none';
+            }
+        });
+
+        function displayWeather(data) {
+            document.getElementById('w-city').textContent = `${data.city}, ${data.country}`;
+            document.getElementById('w-temp').textContent = Math.round(data.temperature);
+            document.getElementById('w-desc').textContent = data.description;
+            document.getElementById('w-humidity').textContent = `${data.humidity}%`;
+            document.getElementById('w-wind').textContent = `${data.windSpeed} m/s`;
+            document.getElementById('w-icon').src = `https://openweathermap.org/img/wn/${data.icon}@2x.png`;
+            
+            // Set current time
+            const now = new Date();
+            document.getElementById('current-time').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+
+            // Reveal info
+            weatherInfo.style.display = 'block';
+
+            // Dynamic background based on weather (simple logic)
+            const main = data.description.toLowerCase();
+            if (main.includes('cloud')) {
+                document.body.style.background = 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)';
+            } else if (main.includes('rain')) {
+                document.body.style.background = 'linear-gradient(135deg, #93c5fd 0%, #1d4ed8 100%)';
+            } else if (main.includes('clear')) {
+                document.body.style.background = 'linear-gradient(135deg, #fde047 0%, #fb923c 100%)';
+            } else {
+                document.body.style.background = 'linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%)';
+            }
+        }
+    </script>
+</body>
+</html>
